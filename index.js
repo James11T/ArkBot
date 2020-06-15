@@ -8,7 +8,7 @@ const updateInterval = 1000; // 1 second interval
 const ip = "127.0.0.1";
 const port = 27015;
 const pword = "password";
-const validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890!£$%&*()[]#~@'?-=+_ ";
+const validChars = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890áéíóúÁÉÍÓÚ!\"£$%^&*)(][}{;'#,./:@~<>?*\\¦`";
 const token = "abcdefghijklmnopqrstuvwxyz";
 
 var conn = new Rcon(ip, port, pword);
