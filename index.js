@@ -135,7 +135,7 @@ function processActions(r) {
             chatActivity = parseChatOutput(r);
             // Split into commands and chat
             for (var i = 0; i < chatActivity.commands.length; ++i) {
-                commandsChannel.send(chatActivity.commands[i]);
+                mainChannel.send(chatActivity.commands[i]);
             }
             for (var i = 0; i < chatActivity.chat.length; ++i) {
                 chatChannel.send(chatActivity.chat[i]);
