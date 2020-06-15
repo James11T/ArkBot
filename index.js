@@ -54,7 +54,7 @@ function parsePlayerList(pl) {
         var allPlayers = "";
         for (var i = 0; i < pl.length; ++i) {
             var line = pl[i];
-            allPlayers += "**" + (i + 1).toString() + ". **" + line.split(". ")[1] + "\n"
+            allPlayers += `**${(i + 1).toString()}. **${line.split(". ")[1]}\n`
         }
         em.addField("Players Online", allPlayers, false);
         return em;
@@ -191,7 +191,7 @@ client.on("message", msg => {
     }
     if (msg.channel === chatChannel) {
         // Send discord message as server chat if safe
-        if !checkInput(msg.content) {
+        if (!checkInput(msg.content)) {
             // Check no crashy characters are in string
             msg.reply("Illegal characters in message, chat relay has been aborted.");
             return;
