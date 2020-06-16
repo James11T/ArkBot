@@ -1,0 +1,10 @@
+{
+    "commandLogChannel": "000000000000000000",
+    "chatRelayChannel": "000000000000000000",
+    "botCommandsChannel": "000000000000000000",
+    "botToken": "TokenHere",
+    "chatRefreshInterval": 1000,
+    "arkServerIP": "127.0.0.1",
+    "arkServerPort": 27015,
+    "arkServerPassword": "password"
+}
