@@ -1,18 +1,14 @@
 const Discord = require("discord.js");
 const Rcon = require("rcon");
+const fs = require("fs");
 const client = new Discord.Client();
-var mainChannel = "000000000000000000"; // Ids will be converted to channels once the bot is readu
-var chatChannel = "000000000000000000";
-var commandsChannel = "000000000000000000";
-const updateInterval = 1000; // 1 second interval
-const ip = "127.0.0.1";
-const port = 27015;
-const pword = "password";
+let rawdata = fs.readFileSync("config.json");
+let config = JSON.parse(rawdata);
+
 const validChars = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890áéíóúÁÉÍÓÚ!\"£$%^&*)(][}{;'#,./:@~<>?*\\¦`";
 const token = "abcdefghijklmnopqrstuvwxyz";
 
-var conn = new Rcon(ip, port, pword);
-
+var conn = new Rcon(config.arkServerIP, config.arkServerPort, config.arkServerPassword);
 var actions = [];
 
 function charCode(inStr) {
@@ -126,19 +122,19 @@ function processActions(r) {
     // Process a request based on action
     switch(actions[0]) {
         case "listplayers":
-            commandsChannel.send(parsePlayerList(r));
+            config.botCommandsChannel.send(parsePlayerList(r));
             break;
         case "broadcast":
-            commandsChannel.send("Broadcast sent");
+            config.botCommandsChannel.send("Broadcast sent");
             break;
         case "getchat":
             chatActivity = parseChatOutput(r);
             // Split into commands and chat
             for (var i = 0; i < chatActivity.commands.length; ++i) {
-                mainChannel.send(chatActivity.commands[i]);
+                config.commandLogChannel.send(chatActivity.commands[i]);
             }
             for (var i = 0; i < chatActivity.chat.length; ++i) {
-                chatChannel.send(chatActivity.chat[i]);
+                config.chatRelayChannel.send(chatActivity.chat[i]);
             }
             break;
         case "serverchat":
@@ -146,7 +142,7 @@ function processActions(r) {
             break;
         default:
             // Should never occour
-            commandsChannel.send("Invalid action `" + actions[0] + "`");
+            config.commandLogChannel.send("Invalid action `" + actions[0] + "`");
             break;
     }
     trimActions()
@@ -174,9 +170,9 @@ conn.on("response", function(r) {
 
 client.on("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`);
-    mainChannel = client.channels.cache.get(mainChannel); // Load the channels from cache
-    chatChannel = client.channels.cache.get(chatChannel);
-    commandsChannel = client.channels.cache.get(commandsChannel);
+    config.commandLogChannel = client.channels.cache.get(config.commandLogChannel); // Load the channels from cache
+    config.chatRelayChannel = client.channels.cache.get(config.chatRelayChannel)
+    config.botCommandsChannel = client.channels.cache.get(config.botCommandsChannel)
     
     // Get chat history from when bot was offline
     actions.push("getchat");
@@ -189,7 +185,7 @@ client.on("message", msg => {
     if (msg.author.bot) {
         return;
     }
-    if (msg.channel === chatChannel) {
+    if (msg.channel === config.chatRelayChannel) {
         // Send discord message as server chat if safe
         if (!checkInput(msg.content)) {
             // Check no crashy characters are in string
@@ -197,8 +193,8 @@ client.on("message", msg => {
             return;
         }
         actions.push("serverchat");
-        conn.send(`serverchat ${msg.author.username}#${msg.author.discriminator}: ${msg.content}`);
-    } else if (msg.content.startsWith(">") && msg.content.length > 1 && msg.channel === commandsChannel) {
+        conn.send(`serverchat ${msg.author.tag}: ${msg.content}`);
+    } else if (msg.content.startsWith(">") && msg.content.length > 1 && msg.channel === config.botCommandsChannel) {
         var args = msg.content.substr(1).split(" ");
         var command = args[0];
         args.splice(0, 1);
@@ -219,7 +215,7 @@ client.on("message", msg => {
                         conn.send("broadcast " + argJoin);
                     }
                 } else {
-                    commandsChannel.send("Can't send empty broadcast")
+                    msg.reply("Can't send empty broadcast");
                 }
                 break;
             default:
@@ -232,6 +228,6 @@ setInterval(function(){
     // Get chat history at set interval
     actions.push("getchat");
     conn.send("getchat");
-}, updateInterval);
+}, config.chatRefreshInterval);
 
 client.login(token);
